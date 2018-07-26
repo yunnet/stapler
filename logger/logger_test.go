@@ -1,0 +1,25 @@
+package logger
+
+import (
+	"testing"
+	"time"
+)
+
+func Test_log(t *testing.T)  {
+	//println("hello world test.")
+	Setup(&Config{AppName:"demo", RootPath:"z:/temp/", Source:true, Console:true, GenFile:true})
+
+	logger := Logger("demo")
+	var seq = 0
+	for{
+		logger.Info("Hello %d, %s", seq, "log")
+		seq++
+		time.Sleep(time.Nanosecond * 1)
+
+		if seq > 10000{
+			break
+		}
+	}
+
+	Close()
+}
