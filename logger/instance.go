@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"stapler/utils"
+	"github.com/yunnet/stapler/utils"
 	"runtime"
 	"strings"
 	"fmt"

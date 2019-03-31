@@ -2,7 +2,7 @@ package logger
 
 import (
 	"sync"
-	"stapler/utils"
+	"github.com/yunnet/stapler/utils"
 	"time"
 )
 
