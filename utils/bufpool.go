@@ -5,28 +5,28 @@ type KBufPool struct {
 	bufSize int
 }
 
-func NewKBufPool(_pool_size, _buf_size int) (pool *KBufPool) {
-	println("New KBufPool(", _pool_size, ", bufsize: ", _buf_size, ")")
+func NewKBufPool(poolSize, bufSize int) (pool *KBufPool) {
+	println("New KBufPool(", poolSize, ", bufsize: ", bufSize, ")")
 
-	pool = &KBufPool{bufSize: _buf_size}
-	for i := 0; i < _pool_size; i++ {
-		pool.Push(NewKBufObj(_buf_size))
+	pool = &KBufPool{bufSize: bufSize}
+	for i := 0; i < poolSize; i++ {
+		pool.Push(NewKBufObj(bufSize))
 	}
 	return
 }
 
-func (this *KBufPool) Push(buf *KBufObj) {
+func (c *KBufPool) Push(buf *KBufObj) {
 	if nil != buf {
 		buf.Clear()
-		this.KStack.Push(buf)
+		c.KStack.Push(buf)
 	}
 }
 
-func (this *KBufPool) Pop() (buf *KBufObj) {
-	if obj, ok := this.KStack.Pop(); ok {
+func (c *KBufPool) Pop() (buf *KBufObj) {
+	if obj, ok := c.KStack.Pop(); ok {
 		buf = obj.(*KBufObj)
 	} else {
-		buf = NewKBufObj(this.bufSize)
+		buf = NewKBufObj(c.bufSize)
 	}
 	return
 }

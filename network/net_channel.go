@@ -1,7 +1,7 @@
 package network
 
 import (
-	"github.com/yunnet/stapler/logger"
+	"stapler/logger"
 	"sync/atomic"
 )
 

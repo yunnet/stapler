@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"unsafe"
 	"sync/atomic"
+	"unsafe"
 )
 
 type KNode struct {
@@ -19,32 +19,32 @@ func NewStack() (stack *KStack) {
 	return &KStack{}
 }
 
-func (this *KStack) Length() int32 {
-	return atomic.LoadInt32(&this.length)
+func (c *KStack) Length() int32 {
+	return atomic.LoadInt32(&c.length)
 }
 
-func (this *KStack) Push(_val interface{}) {
+func (c *KStack) Push(_val interface{}) {
 	if nil != _val {
 		node := &KNode{val: _val}
 		for {
-			node.next = this.top
-			if atomic.CompareAndSwapPointer(&this.top, node.next, unsafe.Pointer(node)) {
-				atomic.AddInt32(&this.length, 1)
+			node.next = c.top
+			if atomic.CompareAndSwapPointer(&c.top, node.next, unsafe.Pointer(node)) {
+				atomic.AddInt32(&c.length, 1)
 				break
 			}
 		}
 	}
 }
 
-func (this *KStack) Pop() (interface{}, bool) {
+func (c *KStack) Pop() (interface{}, bool) {
 	for {
-		top := this.top
+		top := c.top
 		if nil == top {
 			return nil, false
 		} else {
 			node := (*KNode)(top)
-			if atomic.CompareAndSwapPointer(&this.top, top, node.next) {
-				atomic.AddInt32(&this.length, -1)
+			if atomic.CompareAndSwapPointer(&c.top, top, node.next) {
+				atomic.AddInt32(&c.length, -1)
 				return node.val, true
 			}
 		}

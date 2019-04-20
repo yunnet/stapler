@@ -1,7 +1,7 @@
 package kafka
 
 import (
-	"github.com/yunnet/stapler/logger"
+	"stapler/logger"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -33,50 +33,50 @@ const (
 	wsConnected
 )
 
-func (this *KWorker) init(name string, on_start, on_open, on_stop func()) {
-	this.name = name
-	this.lg = logger.Logger(name)
+func (c *KWorker) init(name string, onStart, onOpen, onStop func()) {
+	c.name = name
+	c.lg = logger.Logger(name)
 }
 
-func (this *KWorker) getStatus() wsStatusType {
-	return wsStatusType(atomic.LoadInt32(&this.status))
+func (c *KWorker) getStatus() wsStatusType {
+	return wsStatusType(atomic.LoadInt32(&c.status))
 }
 
-func (this *KWorker) setStatus(value wsStatusType) {
-	atomic.StoreInt32(&this.status, int32(value))
+func (c *KWorker) setStatus(value wsStatusType) {
+	atomic.StoreInt32(&c.status, int32(value))
 }
 
-func (this *KWorker) Setup(zk_addrs string) {
-	this.zkAddrs = strings.Split(zk_addrs, ",")
+func (c *KWorker) Setup(zkAddrs string) {
+	c.zkAddrs = strings.Split(zkAddrs, ",")
 }
 
-func (this *KWorker) Start() {
-	if atomic.CompareAndSwapInt32(&this.active, 0, 1) {
-		this.lg.Info("start")
+func (c *KWorker) Start() {
+	if atomic.CompareAndSwapInt32(&c.active, 0, 1) {
+		c.lg.Info("start")
 
-		this.closing = make(chan bool)
+		c.closing = make(chan bool)
 
-		if nil != this.onStart {
-			this.lg.Info("onStart")
-			this.onStart()
+		if nil != c.onStart {
+			c.lg.Info("onStart")
+			c.onStart()
 		}
 
-		if nil != this.onOpen {
-			this.lg.Debug("check open loop")
+		if nil != c.onOpen {
+			c.lg.Debug("check open loop")
 
 			go func() {
-				for this.isActive() {
-					switch this.getStatus() {
+				for c.isActive() {
+					switch c.getStatus() {
 					case wsClosed:
-						if nil != this.onOpen {
-							this.onOpen()
+						if nil != c.onOpen {
+							c.onOpen()
 						}
 
 					case wsConning:
-						this.lg.Info("connecting to %s ...", this.zkAddrs)
+						c.lg.Info("connecting to %s ...", c.zkAddrs)
 
 					case wsConnected:
-						//this.lg.Debug("connected[%s] ok, total pkgs: %d", this.name, this.allPkgs)
+						//c.lg.Debug("connected[%s] ok, total pkgs: %d", c.name, c.allPkgs)
 					}
 					time.Sleep(time.Second * 5)
 				}
@@ -85,17 +85,17 @@ func (this *KWorker) Start() {
 	}
 }
 
-func (this *KWorker) Stop() {
-	if atomic.CompareAndSwapInt32(&this.active, 1, 0) {
-		this.lg.Info("stop")
+func (c *KWorker) Stop() {
+	if atomic.CompareAndSwapInt32(&c.active, 1, 0) {
+		c.lg.Info("stop")
 
-		close(this.closing)
-		if nil != this.onStop {
-			this.onStop()
+		close(c.closing)
+		if nil != c.onStop {
+			c.onStop()
 		}
 	}
 }
 
-func (this *KWorker) isActive() bool {
-	return atomic.LoadInt32(&this.active) > 0
+func (c *KWorker) isActive() bool {
+	return atomic.LoadInt32(&c.active) > 0
 }

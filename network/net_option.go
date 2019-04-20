@@ -1,6 +1,6 @@
 package network
 
-import "github.com/yunnet/stapler/utils"
+import "stapler/utils"
 
 type KOption struct {
 	RcvQLen  int

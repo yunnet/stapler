@@ -2,7 +2,7 @@ package network
 
 import (
 	"fmt"
-	"github.com/yunnet/stapler/utils"
+	"stapler/utils"
 	"strconv"
 	"strings"
 )
@@ -122,38 +122,44 @@ func channelKeyToAry(_key *string) []string {
 	var sx, ex int
 
 	buf := []byte(*_key)
-	len := len(buf)
+	lens := len(buf)
 
 	ary[0] = string(buf[0:1])
 	ary[1] = string(buf[1:5])
 
-	ex = utils.IndexOf(&buf, 6, len, '.');
-	ary[2] = string(buf[6:ex]);
-	sx = ex + 1
-	ex = utils.IndexOf(&buf, sx, len, '.');
-	ary[3] = string(buf[sx:ex]);
-	sx = ex + 1
-	ex = utils.IndexOf(&buf, sx, len, '.')
-	ary[4] = string(buf[sx:ex]);
-	sx = ex + 1
-	ex = utils.IndexOf(&buf, sx, len, ':')
-	ary[5] = string(buf[sx:ex]);
+	ex = utils.IndexOf(&buf, 6, lens, '.')
+	ary[2] = string(buf[6:ex])
 	sx = ex + 1
 
-	ex = utils.IndexOf(&buf, sx, len, '/')
-	ary[6] = string(buf[sx:ex]);
+	ex = utils.IndexOf(&buf, sx, lens, '.')
+	ary[3] = string(buf[sx:ex])
 	sx = ex + 1
 
-	ex = utils.IndexOf(&buf, sx, len, '.')
-	ary[7] = string(buf[sx:ex]);
+	ex = utils.IndexOf(&buf, sx, lens, '.')
+	ary[4] = string(buf[sx:ex])
 	sx = ex + 1
-	ex = utils.IndexOf(&buf, sx, len, '.')
-	ary[8] = string(buf[sx:ex]);
+
+	ex = utils.IndexOf(&buf, sx, lens, ':')
+	ary[5] = string(buf[sx:ex])
 	sx = ex + 1
-	ex = utils.IndexOf(&buf, sx, len, '.')
-	ary[9] = string(buf[sx:ex]);
+
+	ex = utils.IndexOf(&buf, sx, lens, '/')
+	ary[6] = string(buf[sx:ex])
 	sx = ex + 1
-	ex = utils.IndexOf(&buf, sx, len, ':')
+
+	ex = utils.IndexOf(&buf, sx, lens, '.')
+	ary[7] = string(buf[sx:ex])
+	sx = ex + 1
+
+	ex = utils.IndexOf(&buf, sx, lens, '.')
+	ary[8] = string(buf[sx:ex])
+	sx = ex + 1
+
+	ex = utils.IndexOf(&buf, sx, lens, '.')
+	ary[9] = string(buf[sx:ex])
+	sx = ex + 1
+
+	ex = utils.IndexOf(&buf, sx, lens, ':')
 	ary[10] = string(buf[sx:ex])
 
 	ary[11] = string(buf[ex+1:])

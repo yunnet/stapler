@@ -1,9 +1,9 @@
 package utils
 
 import (
-	"unsafe"
 	"sync/atomic"
 	"time"
+	"unsafe"
 )
 
 type KQueue struct {
@@ -12,7 +12,7 @@ type KQueue struct {
 	length int64
 }
 
-func NewQueue() (*KQueue) {
+func NewQueue() *KQueue {
 	node := &KNode{}
 	return &KQueue{
 		head: unsafe.Pointer(node),
@@ -20,54 +20,54 @@ func NewQueue() (*KQueue) {
 	}
 }
 
-func (this *KQueue) Offer(_val interface{}) (int64) {
+func (c *KQueue) Offer(_val interface{}) int64 {
 	node := &KNode{val: _val}
 	for {
-		tail := this.tail
+		tail := c.tail
 		next := (*KNode)(tail).next
 
-		if tail == this.tail {
+		if tail == c.tail {
 			if nil == next {
-				if atomic.CompareAndSwapPointer(&(*KNode)(this.tail).next, next, unsafe.Pointer(node)) {
-					atomic.CompareAndSwapPointer(&this.tail, tail, unsafe.Pointer(node))
-					atomic.AddInt64(&this.length, 1)
+				if atomic.CompareAndSwapPointer(&(*KNode)(c.tail).next, next, unsafe.Pointer(node)) {
+					atomic.CompareAndSwapPointer(&c.tail, tail, unsafe.Pointer(node))
+					atomic.AddInt64(&c.length, 1)
 					break
 				}
 			} else {
-				atomic.CompareAndSwapPointer(&this.tail, tail, next)
+				atomic.CompareAndSwapPointer(&c.tail, tail, next)
 			}
 		}
 	}
-	return this.Length()
+	return c.Length()
 }
 
-func (this *KQueue) Poll(timeout time.Duration) (val interface{}, ok bool) {
-	val, ok = this.doPoll()
+func (c *KQueue) Poll(timeout time.Duration) (val interface{}, ok bool) {
+	val, ok = c.doPoll()
 	for !ok && timeout > 0 {
 		// println("doPoll timeout ", timeout)
 		time.Sleep(time.Microsecond)
 		timeout -= time.Microsecond
-		val, ok = this.doPoll()
+		val, ok = c.doPoll()
 	}
 	return
 }
 
-func (this *KQueue) doPoll() (interface{}, bool) {
+func (c *KQueue) doPoll() (interface{}, bool) {
 	for {
-		head := this.head
-		tail := this.tail
+		head := c.head
+		tail := c.tail
 		next := (*KNode)(head).next
 
-		if head == this.head {
+		if head == c.head {
 			if head == tail {
 				if nil == next {
 					return nil, false
 				}
-				atomic.CompareAndSwapPointer(&this.tail, tail, next)
+				atomic.CompareAndSwapPointer(&c.tail, tail, next)
 			} else {
 				val := (*KNode)(next).val
-				if atomic.CompareAndSwapPointer(&this.head, head, next) {
-					atomic.AddInt64(&this.length, -1)
+				if atomic.CompareAndSwapPointer(&c.head, head, next) {
+					atomic.AddInt64(&c.length, -1)
 					return val, true
 				}
 			}
@@ -75,10 +75,10 @@ func (this *KQueue) doPoll() (interface{}, bool) {
 	}
 }
 
-func (this *KQueue) IsEmpty() (bool) {
-	return 0 == this.Length()
+func (c *KQueue) IsEmpty() bool {
+	return 0 == c.Length()
 }
 
-func (this *KQueue) Length() (int64) {
-	return atomic.LoadInt64(&this.length)
+func (c *KQueue) Length() int64 {
+	return atomic.LoadInt64(&c.length)
 }

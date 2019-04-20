@@ -1,7 +1,8 @@
 package logger
 
 import (
-	"github.com/yunnet/stapler/utils"
+	"fmt"
+	"stapler/utils"
 	"sync"
 	"time"
 )
@@ -25,24 +26,24 @@ func NewManager() *LogManager {
 	}
 }
 
-func (this *LogManager) run() {
+func (c *LogManager) run() {
 	defer func() {
 		writers.Close()
-		for k, _ := range this.insts {
-			delete(this.insts, k)
+		for k := range c.insts {
+			delete(c.insts, k)
 		}
 	}()
 
 	terminated := false
-	need_flush := false
-	last_flush := time.Now()
+	needFlush := false
+	lastFlush := time.Now()
 
 	var item *LogItem
 	const itv = time.Second * 1
 
 	for !terminated {
-		if ref, ok := this.items.Poll(itv); ok {
-			need_flush = true
+		if ref, ok := c.items.Poll(itv); ok {
+			needFlush = true
 			item = ref.(*LogItem)
 			switch item.itemType {
 			case itDATA:
@@ -51,27 +52,27 @@ func (this *LogManager) run() {
 				terminated = true
 			}
 		} else {
-			if need_flush && last_flush.Add(itv).Before(time.Now()) {
+			if needFlush && lastFlush.Add(itv).Before(time.Now()) {
 				writers.Flush()
-				last_flush = time.Now()
-				need_flush = false
+				lastFlush = time.Now()
+				needFlush = false
 			}
 		}
 	}
-	println("end of loop no write log")
+	fmt.Println("end of loop no write log")
 }
 
-func (this *LogManager) Logger(name string) ILogger {
-	defer this.locks.Unlock()
-	this.locks.Lock()
+func (c *LogManager) Logger(name string) ILogger {
+	defer c.locks.Unlock()
+	c.locks.Lock()
 
-	l := this.insts[name]
+	l := c.insts[name]
 	if nil == l {
 		cfg := NewConfig()
-		cfg.copyForm(this.config)
+		cfg.copyForm(c.config)
 
-		l = &LogInstance{config: cfg, key: name, items: this.items}
-		this.insts[name] = l
+		l = &LogInstance{config: cfg, key: name, items: c.items}
+		c.insts[name] = l
 	}
 	return l
 }

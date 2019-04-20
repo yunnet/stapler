@@ -1,3 +1,3 @@
-module github.com/yunnet/stapler
+module stapler
 
 go 1.12
