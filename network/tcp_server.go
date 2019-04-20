@@ -6,44 +6,44 @@ type TcpServer struct {
 }
 
 func NewTcpServer() INetServer {
-	server := &TcpServer{servants:make(map[int]*TcpServant)}
+	server := &TcpServer{servants: make(map[int]*TcpServant)}
 	server.init(TUN_TCP, server.doPorts, server.doStart, server.doStop)
 	return server
 }
 
-func (this *TcpServer)WriteTo(addr *NetAddr, data []byte) bool {
-	channel := this.Channel(addr)
-	if nil != channel{
+func (c *TcpServer) WriteTo(addr *NetAddr, data []byte) bool {
+	channel := c.Channel(addr)
+	if nil != channel {
 		channel.Write(data)
 	}
 	return nil != channel
 }
 
-func (this *TcpServer)Channel(addr *NetAddr) INetChannel {
-	servant := this.servants[addr.GetLocalPort()]
-	if nil == servant{
+func (c *TcpServer) Channel(addr *NetAddr) INetChannel {
+	servant := c.servants[addr.GetLocalPort()]
+	if nil == servant {
 		return nil
-	}else{
+	} else {
 		key := addr.String()
 		return servant.Channel(&key)
 	}
 }
 
-func (this *TcpServer)doPorts(ports []int){
-	for _,port := range ports{
-		this.servants[port] = NewTcpServant(this, port)
+func (c *TcpServer) doPorts(ports []int) {
+	for _, port := range ports {
+		c.servants[port] = NewTcpServant(c, port)
 	}
 }
 
-func (this *TcpServer)doStart(){
-	this.serverLog.Info("dostart.")
-	for _, servant := range this.servants{
+func (c *TcpServer) doStart() {
+	c.serverLog.Info("dostart.")
+	for _, servant := range c.servants {
 		servant.doStart()
 	}
 }
 
-func (this *TcpServer)doStop(){
-	for _, servant := range this.servants{
+func (c *TcpServer) doStop() {
+	for _, servant := range c.servants {
 		servant.doStop()
 	}
 }

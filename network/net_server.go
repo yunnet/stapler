@@ -1,27 +1,27 @@
 package network
 
 import (
-	"stapler/logger"
-	"stapler/utils"
+	"github.com/yunnet/stapler/logger"
+	"github.com/yunnet/stapler/utils"
 	"sync"
 	"sync/atomic"
 )
 
 type INetServer interface {
-	Logger() (logger.ILogger)
+	Logger() logger.ILogger
 	Setup(host string, ports []int, option *KOption)
 	Start()
 	Stop()
-	IsActive() (bool)
-	TunnelType() (TunnelType)
+	IsActive() bool
+	TunnelType() TunnelType
 	SetCallback(callback *ServerCallback)
-	Channel(*NetAddr) (INetChannel)
+	Channel(*NetAddr) INetChannel
 
-	ChannelCount() (int32)
-	AllRecvBytes() (int64)
-	AllSentBytes() (int64)
+	ChannelCount() int32
+	AllRecvBytes() int64
+	AllSentBytes() int64
 
-	WriteTo(dst *NetAddr, msg []byte) (bool)
+	WriteTo(dst *NetAddr, msg []byte) bool
 }
 
 type NetServer struct {
@@ -48,111 +48,111 @@ type NetServer struct {
 	onCallback *ServerCallback
 }
 
-func (n *NetServer) OnPorts() func([]int) {
-	return n.onPorts
+func (c *NetServer) OnPorts() func([]int) {
+	return c.onPorts
 }
 
-func (n *NetServer) SetOnPorts(onPorts func([]int)) {
-	n.onPorts = onPorts
+func (c *NetServer) SetOnPorts(onPorts func([]int)) {
+	c.onPorts = onPorts
 }
 
-func (this *NetServer) init(tunnel TunnelType, onPorts func([]int), onStart func(), onStop func()) {
-	this.tunnelType = tunnel
+func (c *NetServer) init(tunnel TunnelType, onPorts func([]int), onStart func(), onStop func()) {
+	c.tunnelType = tunnel
 	name := string(tunnel)
 
-	this.serverLog = logger.Logger(name + ".server")
-	this.lsnrLog = logger.Logger(name + ".lsnr")
-	this.channelLog = logger.Logger(name + "channel")
+	c.serverLog = logger.Logger(name + ".server")
+	c.lsnrLog = logger.Logger(name + ".lsnr")
+	c.channelLog = logger.Logger(name + "channel")
 
-	this.waitGroup = &sync.WaitGroup{}
-	this.onCallback = &ServerCallback{Connect: OnConnect, Disconnect: OnDisconnect, Data: OnData}
+	c.waitGroup = &sync.WaitGroup{}
+	c.onCallback = &ServerCallback{Connect: OnConnect, Disconnect: OnDisconnect, Data: OnData}
 
-	this.onPorts = onPorts
-	this.onStart = onStart
-	this.onStop = onStop
+	c.onPorts = onPorts
+	c.onStart = onStart
+	c.onStop = onStop
 }
 
-func (this *NetServer) Setup(host string, ports []int, option *KOption) {
-	if this.IsActive() {
+func (c *NetServer) Setup(host string, ports []int, option *KOption) {
+	if c.IsActive() {
 		panic("can not setup on active status")
 	} else {
-		this.host = host
+		c.host = host
 
-		this.option = NewKOption()
-		this.option.copyFrom(option)
+		c.option = NewKOption()
+		c.option.copyFrom(option)
 
-		this.bufPool = this.option.GetBufPool()
+		c.bufPool = c.option.GetBufPool()
 
-		this.onPorts(ports)
+		c.onPorts(ports)
 	}
 }
 
-func (this *NetServer) Start() {
-	if atomic.CompareAndSwapInt32(&this.active, 0, 1) {
-		this.onStart()
+func (c *NetServer) Start() {
+	if atomic.CompareAndSwapInt32(&c.active, 0, 1) {
+		c.onStart()
 	} else {
-		this.serverLog.Warn("already started.")
+		c.serverLog.Warn("already started.")
 	}
 }
 
-func (this *NetServer) Stop() {
-	if atomic.CompareAndSwapInt32(&this.active, 1, 0) {
-		this.onStop()
+func (c *NetServer) Stop() {
+	if atomic.CompareAndSwapInt32(&c.active, 1, 0) {
+		c.onStop()
 	} else {
-		this.serverLog.Warn("not started.")
+		c.serverLog.Warn("not started.")
 	}
 }
 
-func (this *NetServer) TunnelType() (TunnelType) {
-	return this.tunnelType
+func (c *NetServer) TunnelType() TunnelType {
+	return c.tunnelType
 }
 
-func (this *NetServer) Logger() (logger.ILogger) {
-	return this.serverLog
+func (c *NetServer) Logger() logger.ILogger {
+	return c.serverLog
 }
 
-func (this *NetServer) SetCallback(callback *ServerCallback) {
-	this.onCallback.copyFrom(callback)
+func (c *NetServer) SetCallback(callback *ServerCallback) {
+	c.onCallback.copyFrom(callback)
 }
 
-func (this *NetServer) IsActive() (bool) {
-	return atomic.LoadInt32(&this.active) == 1
+func (c *NetServer) IsActive() bool {
+	return atomic.LoadInt32(&c.active) == 1
 }
 
-func (this *NetServer) Connect(channel INetChannel) {
-	atomic.AddInt32(&this.channelCount, 1)
-	this.onCallback.Connect(channel)
+func (c *NetServer) Connect(channel INetChannel) {
+	atomic.AddInt32(&c.channelCount, 1)
+	c.onCallback.Connect(channel)
 }
 
-func (this *NetServer) Disconnect(channel INetChannel) {
-	atomic.AddInt32(&this.channelCount, -1)
-	this.onCallback.Disconnect(channel)
+func (c *NetServer) Disconnect(channel INetChannel) {
+	atomic.AddInt32(&c.channelCount, -1)
+	c.onCallback.Disconnect(channel)
 }
 
-func (this *NetServer) Data(channel INetChannel, data []byte) {
-	this.onCallback.Data(channel, data)
+func (c *NetServer) Data(channel INetChannel, data []byte) {
+	c.onCallback.Data(channel, data)
 }
 
-func (this *NetServer) ChannelCount() (int32) {
-	return atomic.LoadInt32(&this.channelCount)
+func (c *NetServer) ChannelCount() int32 {
+	return atomic.LoadInt32(&c.channelCount)
 }
 
-func (this *NetServer) AddRecvBytes(size int) {
-	atomic.AddInt64(&this.allRecvBytes, int64(size))
+func (c *NetServer) AddRecvBytes(size int) {
+	atomic.AddInt64(&c.allRecvBytes, int64(size))
 }
 
-func (this *NetServer) AllRecvBytes() (int64) {
-	return atomic.LoadInt64(&this.allRecvBytes)
+func (c *NetServer) AllRecvBytes() int64 {
+	return atomic.LoadInt64(&c.allRecvBytes)
 }
 
-func (this *NetServer) AddSentBytes(size int) {
-	atomic.AddInt64(&this.allSentBytes, int64(size))
+func (c *NetServer) AddSentBytes(size int) {
+	atomic.AddInt64(&c.allSentBytes, int64(size))
 }
 
-func (this *NetServer) AllSentBytes() (int64) {
-	return atomic.LoadInt64(&this.allSentBytes)
+func (c *NetServer) AllSentBytes() int64 {
+	return atomic.LoadInt64(&c.allSentBytes)
 }
 
-func (this *NetServer) ChannelSeq() (int64) {
-	return atomic.AddInt64(&this.channelSeq, 1) & 0xFFFF
+func (c *NetServer) ChannelSeq() int64 {
+	return atomic.AddInt64(&c.channelSeq, 1) & 0xFFFF
 }

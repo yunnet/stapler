@@ -1,9 +1,9 @@
 package logger
 
 import (
-	"time"
-	"sync/atomic"
 	"fmt"
+	"sync/atomic"
+	"time"
 )
 
 type ItemType int

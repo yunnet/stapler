@@ -1,17 +1,17 @@
 package network
 
 import (
-	"stapler/logger"
+	"github.com/yunnet/stapler/logger"
 	"sync/atomic"
 )
 
 type INetChannel interface {
-	Logger() (logger.ILogger)
+	Logger() logger.ILogger
 	Addr() *NetAddr
 	Attr() interface{}
 	SetAttr(interface{})
 	Write([]byte)
-	String() (string)
+	String() string
 }
 
 type NetChannel struct {
@@ -24,45 +24,45 @@ type NetChannel struct {
 	lastSent int64
 }
 
-const NIL  = ""
+const NIL = ""
 
-func (this *NetChannel) Setup(server *NetServer, key *NetAddr) {
-	atomic.StoreInt32(&this.closed, 0)
-	this.server = server
-	this.key = key
+func (c *NetChannel) Setup(server *NetServer, key *NetAddr) {
+	atomic.StoreInt32(&c.closed, 0)
+	c.server = server
+	c.key = key
 }
 
-func (this *NetChannel) Clear() {
-	this.key.Clear()
-	this.lastRecv = 0
-	this.lastSent = 0
-	this.attr = nil
+func (c *NetChannel) Clear() {
+	c.key.Clear()
+	c.lastRecv = 0
+	c.lastSent = 0
+	c.attr = nil
 }
 
-func (this *NetChannel) Logger() (logger.ILogger) {
-	return this.server.serverLog
+func (c *NetChannel) Logger() logger.ILogger {
+	return c.server.serverLog
 }
 
-func (this *NetChannel) String() (string) {
-	return this.key.String()
+func (c *NetChannel) String() string {
+	return c.key.String()
 }
 
-func (this *NetChannel) Attr() (interface{}) {
-	return this.attr
+func (c *NetChannel) Attr() interface{} {
+	return c.attr
 }
 
-func (this *NetChannel) SetAttr(attr interface{}) {
-	this.attr = attr
+func (c *NetChannel) SetAttr(attr interface{}) {
+	c.attr = attr
 }
 
-func (this *NetChannel) Addr() (*NetAddr) {
-	return this.key
+func (c *NetChannel) Addr() *NetAddr {
+	return c.key
 }
 
-func (this *NetChannel) LastRecv() (int64) {
-	return this.lastRecv
+func (c *NetChannel) LastRecv() int64 {
+	return c.lastRecv
 }
 
-func (this *NetChannel) LastSent() (int64) {
-	return this.lastSent
+func (c *NetChannel) LastSent() int64 {
+	return c.lastSent
 }

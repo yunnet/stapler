@@ -1,10 +1,10 @@
 package logger
 
 import (
+	"fmt"
 	"github.com/yunnet/stapler/utils"
 	"runtime"
 	"strings"
-	"fmt"
 )
 
 type LogInstance struct {

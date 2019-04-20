@@ -6,20 +6,20 @@ type ConsoleWriter struct {
 	enable bool
 }
 
-func (this *ConsoleWriter)Recv(msg string)  {
-	if this.enable{
+func (c *ConsoleWriter)Recv(msg string)  {
+	if c.enable{
 		fmt.Print(msg)
 	}
 }
 
-func (this *ConsoleWriter)Open(){
+func (c *ConsoleWriter)Open(){
 
 }
 
-func (this *ConsoleWriter)Flush(){
+func (c *ConsoleWriter)Flush(){
 
 }
 
-func (this *ConsoleWriter)Close(){
+func (c *ConsoleWriter)Close(){
 
 }

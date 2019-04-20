@@ -7,74 +7,74 @@ import (
 
 type TcpServant struct {
 	NetServant
-	server *TcpServer
-	lsnr *net.TCPListener
-	lock sync.RWMutex
-	channels map[string] INetChannel
+	server   *TcpServer
+	lsnr     *net.TCPListener
+	lock     sync.RWMutex
+	channels map[string]INetChannel
 }
 
-func NewTcpServant(server *TcpServer, port int)(servent *TcpServant)  {
+func NewTcpServant(server *TcpServer, port int) (servent *TcpServant) {
 	server.serverLog.Info("New tcp servant %s:%d", server.host, port)
-	servent = &TcpServant{server:server, lock:sync.RWMutex{}, channels:make(map[string]INetChannel)}
+	servent = &TcpServant{server: server, lock: sync.RWMutex{}, channels: make(map[string]INetChannel)}
 	servent.Setup(&server.NetServer, server.host, port)
 	return
 }
 
-func (this *TcpServant) Channel(key *string)(channel INetChannel)  {
-	this.lock.RLock()
-	channel = this.channels[*key]
-	this.lock.RUnlock()
+func (c *TcpServant) Channel(key *string) (channel INetChannel) {
+	c.lock.RLock()
+	channel = c.channels[*key]
+	c.lock.RUnlock()
 	return
 }
 
-func (this *TcpServant)doStop()  {
-	log := this.server.lsnrLog
+func (c *TcpServant) doStop() {
+	log := c.server.lsnrLog
 
 	defer func() {
-		if v:= recover(); nil != v{
+		if v := recover(); nil != v {
 			log.Error("error on clean %v", v)
 		}
-		this.lock.RUnlock()
+		c.lock.RUnlock()
 	}()
 
-	this.lsnr.Close()
-	this.lock.RLock()
-	for _, ref := range this.channels{
+	c.lsnr.Close()
+	c.lock.RLock()
+	for _, ref := range c.channels {
 		channel := ref.(*TcpChannel)
 		channel.conn.Close()
 	}
 }
 
-func (this *TcpServant)doStart(){
-	log := this.server.lsnrLog
+func (c *TcpServant) doStart() {
+	log := c.server.lsnrLog
 
-	addr := this.LocalAddr()
+	addr := c.LocalAddr()
 	log.Debug("doStart %s", addr)
 
-	if laddr, e := net.ResolveTCPAddr("tcp4", addr); e != nil{
+	if laddr, e := net.ResolveTCPAddr("tcp4", addr); e != nil {
 		panic(e)
-	}else{
-		log.Info("try listen on %s", this.Key())
-		if lsnr, err := net.ListenTCP("tcp", laddr); nil != err{
+	} else {
+		log.Info("try listen on %s", c.Key())
+		if lsnr, err := net.ListenTCP("tcp", laddr); nil != err {
 			panic(err)
-		}else{
-			this.lsnr = lsnr
-			go this.loopAccept()
-			log.Info("listen on %s ok.", this.Key())
+		} else {
+			c.lsnr = lsnr
+			go c.loopAccept()
+			log.Info("listen on %s ok.", c.Key())
 		}
 	}
 }
 
-func (this *TcpServant) loopAccept()  {
-	log := this.server.lsnrLog
+func (c *TcpServant) loopAccept() {
+	log := c.server.lsnrLog
 
-	for this.server.IsActive(){
-		if acceptConn, err := this.lsnr.AcceptTCP(); nil != err{
+	for c.server.IsActive() {
+		if acceptConn, err := c.lsnr.AcceptTCP(); nil != err {
 			panic(err)
-		}else{
+		} else {
 			go func(conn *net.TCPConn) {
-				channel := NewTcpChannel(&this.NetServant, acceptConn)
-				go this.openChannel(channel)
+				channel := NewTcpChannel(&c.NetServant, acceptConn)
+				go c.openChannel(channel)
 			}(acceptConn)
 		}
 	}
@@ -82,18 +82,18 @@ func (this *TcpServant) loopAccept()  {
 	log.Info("---------loopAccept.end")
 }
 
-func (this *TcpServant)openChannel(channel *TcpChannel){
+func (c *TcpServant) openChannel(channel *TcpChannel) {
 	key := channel.key.String()
 
-	this.lock.Lock()
-	this.channels[key] = channel
-	this.lock.Unlock()
+	c.lock.Lock()
+	c.channels[key] = channel
+	c.lock.Unlock()
 
 	channel.Open()
 
-	this.lock.Lock()
-	delete(this.channels, key)
-	this.lock.Unlock()
+	c.lock.Lock()
+	delete(c.channels, key)
+	c.lock.Unlock()
 
 	channel.Clear()
 }

@@ -1,8 +1,8 @@
 package network
 
 import (
+	"github.com/yunnet/stapler/logger"
 	"testing"
-	"stapler/logger"
 	"time"
 )
 
@@ -21,5 +21,4 @@ func TestTcpServer(t *testing.T) {
 		log.Info("links=%d, recv=%d, sents:%d", s.ChannelCount(), s.AllRecvBytes(), s.AllSentBytes())
 		time.Sleep(time.Second * 3)
 	}
-
 }

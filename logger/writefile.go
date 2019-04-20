@@ -1,10 +1,10 @@
 package logger
 
 import (
-	"os"
 	"bufio"
-	"time"
 	"fmt"
+	"os"
+	"time"
 )
 
 type FileWriter struct {

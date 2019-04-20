@@ -11,22 +11,22 @@ type ServerCallback struct {
 	Data func(INetChannel, []byte)
 }
 
-func NewServerCallback(onConnect, onDisconnect func(INetChannel), onData func(INetChannel, []byte)) (*ServerCallback) {
+func NewServerCallback(onConnect, onDisconnect func(INetChannel), onData func(INetChannel, []byte)) *ServerCallback {
 	return &ServerCallback{Connect:onConnect, Disconnect:onDisconnect, Data:onData}
 }
 
-func (this *ServerCallback)copyFrom(src *ServerCallback)  {
+func (c *ServerCallback)copyFrom(src *ServerCallback)  {
 	if nil != src{
 		if nil != src.Connect{
-			this.Connect = src.Connect
+			c.Connect = src.Connect
 		}
 
 		if nil != src.Disconnect{
-			this.Disconnect = src.Disconnect
+			c.Disconnect = src.Disconnect
 		}
 
 		if nil != src.Data{
-			this.Data = src.Data
+			c.Data = src.Data
 		}
 	}
 }
